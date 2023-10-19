@@ -19,12 +19,20 @@ public static class Program
             Console.WriteLine($"File at {Path.GetFullPath(path)} doesn't exist!");
             return;
         }
-        
+
         Console.WriteLine($"Reading file at {Path.GetFullPath(path)}...");
 
         var reader = new RiffReader(path);
-        var riffFile = reader.Read();
 
-        Console.WriteLine(riffFile);
+        try
+        {
+            var riffFile = reader.Read();
+            Console.WriteLine(riffFile);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("There was an error while reading the file:");
+            Console.WriteLine(e.Message);
+        }
     }
 }

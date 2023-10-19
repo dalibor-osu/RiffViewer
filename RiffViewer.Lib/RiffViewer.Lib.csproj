@@ -11,8 +11,5 @@
 
 
 
-    <ItemGroup>
-      <Folder Include="Exceptions\" />
-    </ItemGroup>
 
 </Project>

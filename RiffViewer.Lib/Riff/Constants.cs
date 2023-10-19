@@ -1,5 +1,8 @@
 ﻿namespace RiffViewer.Lib.Riff;
 
+/// <summary>
+/// Class with constants used in the RIFF file format.
+/// </summary>
 public static class Constants
 {
     public const string RIFF_CHUNK_IDENTIFIER = "RIFF";
