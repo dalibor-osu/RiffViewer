@@ -1,4 +1,4 @@
-﻿namespace RiffViewer.Lib.Riff.Chunk;
+﻿namespace RiffViewer.Lib.Riff.Chunk.Interfaces;
 
 /// <summary>
 /// Base interface for all RIFF file chunks.
@@ -14,4 +14,9 @@ public interface IChunk
     /// Gets the length of the chunk in bytes.
     /// </summary>
     public int Length { get; }
+    
+    /// <summary>
+    /// Gets the offset of the chunk from the start of the file in bytes.
+    /// </summary>
+    public long Offset { get; }
 }

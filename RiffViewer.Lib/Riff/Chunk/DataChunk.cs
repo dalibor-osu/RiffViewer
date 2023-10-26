@@ -1,21 +1,18 @@
 ﻿using System.Text;
+using RiffViewer.Lib.Riff.Chunk.Interfaces;
 
 namespace RiffViewer.Lib.Riff.Chunk;
 
 /// <summary>
 /// Structure representing a general data chunk.
 /// </summary>
-public class DataChunk : Chunk
+public class DataChunk : Chunk, IDataChunk
 {
-    /// <summary>
-    /// Gets whether the data of this chunk is loaded.
-    /// </summary>
-    public bool Loaded { get; }
+    // <inheritdoc />
+    public bool Loaded { get; private set; }
 
-    /// <summary>
-    /// Gets the data of this chunk.
-    /// </summary>
-    public byte[] Data { get; }
+    // <inheritdoc />
+    public byte[] Data { get; private set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DataChunk"/> class with loaded data.
@@ -42,6 +39,12 @@ public class DataChunk : Chunk
     public DataChunk(string identifier, long offset, int length)
         : this(identifier, offset, length, Array.Empty<byte>(), false)
     {
+    }
+    
+    public void SetData(byte[] data)
+    {
+        Data = data;
+        Loaded = true;
     }
 
     /// <inheritdoc />

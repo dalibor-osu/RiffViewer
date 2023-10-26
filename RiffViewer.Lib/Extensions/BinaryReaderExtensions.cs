@@ -1,4 +1,6 @@
 ﻿using System.Text;
+using RiffViewer.Lib.Riff.Chunk.Interfaces;
+using static RiffViewer.Lib.Riff.Constants;
 
 namespace RiffViewer.Lib.Extensions;
 
@@ -40,5 +42,21 @@ public static class BinaryReaderExtensions
     {
         var bytes = reader.ReadBytes(4);
         return Encoding.ASCII.GetString(bytes);
+    }
+
+    /// <summary>
+    /// Reads the data bytes of a data chunk.
+    /// </summary>
+    /// <param name="reader">Instance of <see cref="BinaryReader"/> that reads the data</param>
+    /// <param name="chunk">Chunk to read the data from</param>
+    /// <returns>Chunk with data</returns>
+    public static IDataChunk ReadChunkData(this BinaryReader reader, IDataChunk chunk)
+    {
+        reader.GoTo(chunk.Offset + CHUNK_HEADER_LENGTH_BYTES);
+        
+        byte[] data = reader.ReadBytes(chunk.Length);
+        chunk.SetData(data);
+        
+        return chunk;
     }
 }

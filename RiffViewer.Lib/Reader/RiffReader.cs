@@ -1,7 +1,9 @@
 ﻿using RiffViewer.Lib.Exceptions;
 using RiffViewer.Lib.Extensions;
+using RiffViewer.Lib.Helpers;
 using RiffViewer.Lib.Riff;
 using RiffViewer.Lib.Riff.Chunk;
+using RiffViewer.Lib.Riff.Chunk.Interfaces;
 using static RiffViewer.Lib.Riff.Constants;
 
 namespace RiffViewer.Lib.Reader;
@@ -28,7 +30,7 @@ public class RiffReader
     /// </summary>
     /// <returns>Content of a RIFF file as an instance of <see cref="RiffFile"/></returns>
     /// <exception cref="RiffFileException">Thrown if file is not a RIFF file</exception>
-    public RiffFile Read()
+    public IRiffFile Read()
     {
         using var fileStream = File.OpenRead(_filePath);
         using var reader = new BinaryReader(fileStream);
@@ -41,7 +43,14 @@ public class RiffReader
         }
 
         var mainChunk = ReadRiffChunk(reader);
-
+        var format = RiffFormatHelper.GetRiffFormatFromString(mainChunk.Format);
+        var formatReader = RiffFormatHelper.GetFormatSpecificReader(format);
+        
+        if (formatReader != null)
+        {
+            return formatReader.ReadFormatSpecificData(_filePath, reader, mainChunk);
+        }
+        
         return new RiffFile(_filePath, mainChunk);
     }
 
@@ -105,7 +114,7 @@ public class RiffReader
         long offset = reader.BaseStream.Position - CHUNK_IDENTIFIER_LENGTH_BYTES;
         int length = reader.ReadInt32();
         string type = reader.Read4ByteString();
-        var childChunks = new List<Chunk>();
+        var childChunks = new List<IChunk>();
 
         long chunkEnd = offset + length + (length % 2 == 0 ? 0 : 1);
         while (reader.BaseStream.Position < chunkEnd)
@@ -132,7 +141,7 @@ public class RiffReader
         long offset = reader.BaseStream.Position - CHUNK_IDENTIFIER_LENGTH_BYTES;
         int length = reader.ReadInt32();
         string type = reader.Read4ByteString();
-        var childChunks = new List<Chunk>();
+        var childChunks = new List<IChunk>();
 
         long chunkEnd = offset + length + (length % 2 == 0 ? 0 : 1);
         while (reader.BaseStream.Position < chunkEnd)

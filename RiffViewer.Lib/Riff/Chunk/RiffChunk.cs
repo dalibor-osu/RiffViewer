@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using RiffViewer.Lib.Riff.Chunk.Interfaces;
 using static RiffViewer.Lib.Riff.Constants;
 
 namespace RiffViewer.Lib.Riff.Chunk;
@@ -11,25 +12,25 @@ public class RiffChunk : Chunk
     /// <summary>
     /// Gets the child chunks of this chunk.
     /// </summary>
-    public List<Chunk> ChildChunks { get; }
+    public List<IChunk> ChildChunks { get; }
 
     /// <summary>
-    /// Gets the type of this chunk.
+    /// Gets the format of this chunk.
     /// </summary>
-    public string Type { get; }
+    public string Format { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RiffChunk"/> class with child chunks.
     /// </summary>
     /// <param name="offset">Offset from the start of the file in bytes</param>
     /// <param name="length">Length of the chunk in bytes</param>
-    /// <param name="type">Type of the RIFF chunk... e.g. WAVE, AVI, WEBP, ...</param>
+    /// <param name="format">Format of the RIFF chunk... e.g. WAVE, AVI, WEBP, ...</param>
     /// <param name="childChunks">Child chunks of this chunks</param>
-    public RiffChunk(long offset, int length, string type, List<Chunk> childChunks)
+    public RiffChunk(long offset, int length, string format, List<IChunk> childChunks)
         : base(RIFF_CHUNK_IDENTIFIER, offset, length)
     {
         ChildChunks = childChunks;
-        Type = type;
+        Format = format;
     }
 
     /// <summary>
@@ -37,9 +38,9 @@ public class RiffChunk : Chunk
     /// </summary>
     /// <param name="offset">Offset from the start of the file in bytes</param>
     /// <param name="length">Length of the chunk in bytes</param>
-    /// <param name="type">Type of the RIFF chunk... e.g. WAVE, AVI, WEBP, ...</param>
-    public RiffChunk(long offset, int length, string type)
-        : this(offset, length, type, new List<Chunk>())
+    /// <param name="format">Format of the RIFF chunk... e.g. WAVE, AVI, WEBP, ...</param>
+    public RiffChunk(long offset, int length, string format)
+        : this(offset, length, format, new List<IChunk>())
     {
     }
 
@@ -48,7 +49,7 @@ public class RiffChunk : Chunk
     {
         StringBuilder builder = new();
         builder.Append(base.ToString());
-        builder.AppendLine($"Type: {Type}");
+        builder.AppendLine($"Format: {Format}");
         builder.Append("Child Chunks:");
 
         foreach (var chunk in ChildChunks)

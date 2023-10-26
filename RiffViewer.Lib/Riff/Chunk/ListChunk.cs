@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using RiffViewer.Lib.Riff.Chunk.Interfaces;
 using static RiffViewer.Lib.Riff.Constants;
 
 namespace RiffViewer.Lib.Riff.Chunk;
@@ -11,7 +12,7 @@ public class ListChunk : Chunk
     /// <summary>
     /// Gets the child chunks of this chunk.
     /// </summary>
-    public List<Chunk> ChildChunks { get; }
+    public List<IChunk> ChildChunks { get; }
 
     /// <summary>
     /// Gets the type of this chunk.
@@ -25,7 +26,7 @@ public class ListChunk : Chunk
     /// <param name="length">Length of the chunk in bytes</param>
     /// <param name="type">Type of the RIFF chunk... e.g. INFO</param>
     /// <param name="childChunks">Child chunks of this chunks</param>
-    public ListChunk(long offset, int length, string type, List<Chunk> childChunks)
+    public ListChunk(long offset, int length, string type, List<IChunk> childChunks)
         : base(LIST_CHUNK_IDENTIFIER, offset, length)
     {
         ChildChunks = childChunks;
@@ -39,7 +40,7 @@ public class ListChunk : Chunk
     /// <param name="length">Length of the chunk in bytes</param>
     /// <param name="type">Type of the RIFF chunk... e.g. INFO</param>
     public ListChunk(long offset, int length, string type)
-        : this(offset, length, type, new List<Chunk>())
+        : this(offset, length, type, new List<IChunk>())
     {
     }
 
@@ -54,7 +55,7 @@ public class ListChunk : Chunk
         foreach (var chunk in ChildChunks)
         {
             builder.Append("\n\t--------------------");
-            builder.Append(chunk.ToString().Replace("\n", "\n\t"));
+            builder.Append(chunk?.ToString()?.Replace("\n", "\n\t"));
         }
 
         return builder.ToString();
