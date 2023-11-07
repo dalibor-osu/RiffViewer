@@ -14,15 +14,17 @@ namespace RiffViewer.Lib.Reader;
 public class RiffReader
 {
     private readonly string _filePath;
-    private readonly bool _lazyLoading = true;
+    private readonly bool _lazyLoading;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RiffReader"/> class.
     /// </summary>
     /// <param name="filePath">Path to a RIFF file to read</param>
-    public RiffReader(string filePath)
+    /// <param name="lazyLoading">Whether the file should be read with or without data. Default is true (without data)</param>
+    public RiffReader(string filePath, bool lazyLoading = true)
     {
         _filePath = filePath;
+        _lazyLoading = lazyLoading;
     }
 
     /// <summary>
