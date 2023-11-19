@@ -10,13 +10,13 @@ namespace RiffViewer.Lib.Riff.Chunk;
 /// </summary>
 public abstract class Chunk : IChunk
 {
-    // <inheritdoc />
+    /// <inheritdoc />
     public string Identifier { get; }
 
-    // <inheritdoc />
-    public int Length { get; }
+    /// <inheritdoc />
+    public int Length { get; protected set; }
 
-    // <inheritdoc />
+    /// <inheritdoc />
     public long Offset { get; }
 
     /// <summary>
@@ -47,5 +47,14 @@ public abstract class Chunk : IChunk
         builder.AppendLine($"Offset: {Offset} bytes");
 
         return builder.ToString();
+    }
+
+    public virtual byte[] GetBytes()
+    {
+        List<byte> bytes = new();
+        bytes.AddRange(Encoding.ASCII.GetBytes(Identifier));
+        bytes.AddRange(BitConverter.GetBytes(Length));
+
+        return bytes.ToArray();
     }
 }

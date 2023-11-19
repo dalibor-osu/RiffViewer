@@ -53,10 +53,10 @@ public static class BinaryReaderExtensions
     public static IDataChunk ReadChunkData(this BinaryReader reader, IDataChunk chunk)
     {
         reader.GoTo(chunk.Offset + CHUNK_HEADER_LENGTH_BYTES);
-        
+
         byte[] data = reader.ReadBytes(chunk.Length);
         chunk.SetData(data);
-        
+
         return chunk;
     }
 }

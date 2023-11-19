@@ -44,6 +44,54 @@ public class ListChunk : Chunk
     {
     }
 
+    public IChunk? FindSubChunk(string name)
+    {
+        string[] names = name.Split('.');
+        var chunk = ChildChunks.Find(c => c.Identifier == names[0]) ??
+                    ChildChunks.Where(c => c is ListChunk).Cast<ListChunk>().ToList().Find(c => c.Type == names[0]);
+
+        if (names.Length == 1)
+        {
+            return chunk;
+        }
+
+        if (chunk is ListChunk listChunk)
+        {
+            return listChunk.FindSubChunk(string.Join('.', names[1..]));
+        }
+
+        return null;
+    }
+
+    public int RemoveChunk(string name)
+    {
+        string[] names = name.Split('.');
+        IChunk? chunk;
+
+        if (names.Length == 1)
+        {
+            chunk = ChildChunks.Find(c => c.Identifier == names[0]) ??
+                    ChildChunks.Where(c => c is ListChunk).Cast<ListChunk>().ToList().Find(c => c.Type == names[0]);
+
+            if (chunk == null)
+            {
+                return -1;
+            }
+
+            ChildChunks.Remove(chunk);
+            return chunk.Length;
+        }
+
+        chunk = ChildChunks.Where(c => c is ListChunk).Cast<ListChunk>().ToList().Find(c => c.Type == names[0]);
+
+        if (chunk is ListChunk listChunk)
+        {
+            return listChunk.RemoveChunk(string.Join('.', names[1..]));
+        }
+
+        return -1;
+    }
+
     /// <inheritdoc />
     public override string ToString()
     {
@@ -59,5 +107,19 @@ public class ListChunk : Chunk
         }
 
         return builder.ToString();
+    }
+
+    /// <inheritdoc />
+    public override byte[] GetBytes()
+    {
+        List<byte> bytes = new(base.GetBytes());
+        bytes.AddRange(Encoding.ASCII.GetBytes(Type));
+
+        foreach (var chunk in ChildChunks)
+        {
+            bytes.AddRange(chunk.GetBytes());
+        }
+
+        return bytes.ToArray();
     }
 }

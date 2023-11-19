@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using RiffViewer.Lib.Riff.Chunk;
+using RiffViewer.Lib.Riff.Chunk.Interfaces;
 using RiffViewer.Lib.Riff.Formats;
 
 namespace RiffViewer.Lib.Riff;
@@ -9,12 +10,12 @@ namespace RiffViewer.Lib.Riff;
 /// </summary>
 public class RiffFile : IRiffFile
 {
-    // <inheritdoc />
+    /// <inheritdoc />
     public string Path { get; }
 
-    // <inheritdoc />
+    /// <inheritdoc />
     public RiffChunk MainChunk { get; }
-    
+
     public RiffFormat Format { get; }
 
     /// <summary>
@@ -28,7 +29,7 @@ public class RiffFile : IRiffFile
         MainChunk = mainChunk;
         Format = RiffFormat.Other;
     }
-    
+
     /// <summary>
     /// Initializes a new instance of the <see cref="RiffFile"/> class.
     /// </summary>
@@ -40,6 +41,18 @@ public class RiffFile : IRiffFile
         Path = path;
         MainChunk = mainChunk;
         Format = format;
+    }
+
+    /// <inheritdoc />
+    public IChunk? FindChunk(string name)
+    {
+        return MainChunk.FindSubChunk(name);
+    }
+
+    /// <inheritdoc />
+    public int RemoveChunk(string name)
+    {
+        return MainChunk.RemoveChunk(name);
     }
 
     /// <inheritdoc />

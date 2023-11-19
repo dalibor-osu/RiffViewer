@@ -32,7 +32,7 @@ public class RiffReader
     /// </summary>
     /// <returns>Content of a RIFF file as an instance of <see cref="RiffFile"/></returns>
     /// <exception cref="RiffFileException">Thrown if file is not a RIFF file</exception>
-    public IRiffFile Read()
+    public IRiffFile ReadFile()
     {
         using var fileStream = File.OpenRead(_filePath);
         using var reader = new BinaryReader(fileStream);
@@ -47,13 +47,25 @@ public class RiffReader
         var mainChunk = ReadRiffChunk(reader);
         var format = RiffFormatHelper.GetRiffFormatFromString(mainChunk.Format);
         var formatReader = RiffFormatHelper.GetFormatSpecificReader(format);
-        
+
         if (formatReader != null)
         {
             return formatReader.ReadFormatSpecificData(_filePath, reader, mainChunk);
         }
-        
+
         return new RiffFile(_filePath, mainChunk);
+    }
+
+    /// <summary>
+    /// Reads the content of a chunk from a file
+    /// </summary>
+    /// <returns>Chunk as <see cref="IChunk"/></returns>
+    public IChunk ReadChunk()
+    {
+        using var fileStream = File.OpenRead(_filePath);
+        using var reader = new BinaryReader(fileStream);
+
+        return ReadChunk(reader);
     }
 
     /// <summary>
@@ -61,7 +73,7 @@ public class RiffReader
     /// </summary>
     /// <param name="reader">Instance of <see cref="BinaryReader"/> used for reading bytes in the current file</param>
     /// <returns>Content of a chunk as <see cref="Chunk"/></returns>
-    private Chunk ReadChunk(BinaryReader reader)
+    private IChunk ReadChunk(BinaryReader reader)
     {
         string chunkIdentifier = reader.Read4ByteString();
 
@@ -80,7 +92,7 @@ public class RiffReader
     /// <param name="chunkIdentifier">Identifier of the chunk... e.g. RIFF, LIST, ...</param>
     /// <param name="position">If set, reader will start reading the content of the chunk from this position in the file</param>
     /// <returns>Content of a data chunk as <see cref="DataChunk"/></returns>
-    private DataChunk ReadDataChunk(BinaryReader reader, string chunkIdentifier, long position = -1)
+    private IDataChunk ReadDataChunk(BinaryReader reader, string chunkIdentifier, long position = -1)
     {
         if (position > -1)
         {

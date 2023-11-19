@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using RiffViewer.Lib.Exceptions;
 using RiffViewer.Lib.Riff.Chunk.Interfaces;
 
 namespace RiffViewer.Lib.Riff.Chunk;
@@ -40,7 +41,7 @@ public class DataChunk : Chunk, IDataChunk
         : this(identifier, offset, length, Array.Empty<byte>(), false)
     {
     }
-    
+
     public void SetData(byte[] data)
     {
         Data = data;
@@ -55,5 +56,19 @@ public class DataChunk : Chunk, IDataChunk
         builder.Append($"Loaded: {Loaded}");
 
         return builder.ToString();
+    }
+
+    /// <inheritdoc />
+    public override byte[] GetBytes()
+    {
+        if (!Loaded)
+        {
+            throw new RiffFileException("Data not loaded!");
+        }
+
+        List<byte> bytes = new(base.GetBytes());
+        bytes.AddRange(Data);
+
+        return bytes.ToArray();
     }
 }

@@ -14,9 +14,15 @@ public interface IChunk
     /// Gets the length of the chunk in bytes.
     /// </summary>
     public int Length { get; }
-    
+
     /// <summary>
     /// Gets the offset of the chunk from the start of the file in bytes.
     /// </summary>
     public long Offset { get; }
+
+    /// <summary>
+    /// Gets the data of the chunk in bytes.
+    /// </summary>
+    /// <returns></returns>
+    public byte[] GetBytes();
 }

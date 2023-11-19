@@ -44,6 +44,81 @@ public class RiffChunk : Chunk
     {
     }
 
+    public IChunk? FindSubChunk(string name)
+    {
+        string[] names = name.Split('.');
+        IChunk? chunk;
+
+        if (names.Length == 1)
+        {
+            chunk = ChildChunks.Find(c => c.Identifier == names[0]);
+            return chunk;
+        }
+
+        chunk = ChildChunks.Where(c => c is ListChunk).Cast<ListChunk>().ToList().Find(c => c.Type == names[0]);
+
+        if (chunk is ListChunk listChunk)
+        {
+            return listChunk.FindSubChunk(string.Join('.', names[1..]));
+        }
+
+        return null;
+    }
+
+    public void InsertChunk(IChunk chunk, int position)
+    {
+        if (position < 0 || position > ChildChunks.Count)
+        {
+            Console.WriteLine("Invalid position for inserting chunk. It will be inserted at the end of the file.");
+            ChildChunks.Add(chunk);
+        }
+        else
+        {
+            ChildChunks.Insert(position, chunk);
+        }
+
+        Length += chunk.Length + CHUNK_HEADER_LENGTH_BYTES;
+    }
+
+    public int RemoveChunk(string name)
+    {
+        //TODO: Create an abstraction for this (ewww)
+        string[] names = name.Split('.');
+        IChunk? chunk;
+
+        if (names.Length == 1)
+        {
+            chunk = ChildChunks.Find(c => c.Identifier == names[0]) ??
+                    ChildChunks.Where(c => c is ListChunk).Cast<ListChunk>().ToList().Find(c => c.Type == names[0]);
+
+            if (chunk == null)
+            {
+                return -1;
+            }
+
+            ChildChunks.Remove(chunk);
+            Length -= chunk.Length + CHUNK_HEADER_LENGTH_BYTES;
+            return chunk.Length;
+        }
+
+        chunk = ChildChunks.Where(c => c is ListChunk).Cast<ListChunk>().ToList().Find(c => c.Type == names[0]);
+
+        if (chunk is not ListChunk listChunk)
+        {
+            return -1;
+        }
+
+        int size = listChunk.RemoveChunk(string.Join('.', names[1..]));
+
+        if (size < 0)
+        {
+            return -1;
+        }
+
+        Length -= size + CHUNK_HEADER_LENGTH_BYTES;
+        return size;
+    }
+
     /// <inheritdoc />
     public override string ToString()
     {
@@ -55,9 +130,25 @@ public class RiffChunk : Chunk
         foreach (var chunk in ChildChunks)
         {
             builder.Append("\n\t--------------------");
-            builder.Append(chunk.ToString().Replace("\n", "\n\t"));
+            builder.Append(chunk.ToString()?.Replace("\n", "\n\t"));
         }
 
         return builder.ToString();
+    }
+
+    /// <inheritdoc />
+    public override byte[] GetBytes()
+    {
+        List<byte> bytes = new();
+        bytes.AddRange(Encoding.ASCII.GetBytes(Identifier));
+        bytes.AddRange(BitConverter.GetBytes(Length));
+        bytes.AddRange(Encoding.ASCII.GetBytes(Format));
+
+        foreach (var chunk in ChildChunks)
+        {
+            bytes.AddRange(chunk.GetBytes());
+        }
+
+        return bytes.ToArray();
     }
 }

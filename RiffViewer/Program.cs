@@ -26,7 +26,7 @@ public static class Program
         finally
         {
             stopWatch.Stop();
-            Console.WriteLine($"Execution took {stopWatch.ElapsedMilliseconds}ms");
+            Console.WriteLine($"\nExecution took {stopWatch.ElapsedMilliseconds}ms");
         }
 #endif
     }
