@@ -9,10 +9,10 @@ namespace RiffViewer.Lib.Riff.Chunk;
 /// </summary>
 public class DataChunk : Chunk, IDataChunk
 {
-    // <inheritdoc />
+    /// <inheritdoc />
     public bool Loaded { get; private set; }
 
-    // <inheritdoc />
+    /// <inheritdoc />
     public byte[] Data { get; private set; }
 
     /// <summary>
