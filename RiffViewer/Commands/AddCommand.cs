@@ -28,8 +28,8 @@ public class AddCommand : Command
             return;
         }
         
-        Parameter<string> chunkInputPath = new("Input", "Input file with chunk", new []{"-i", "--input"}, args, true);
-        Parameter<string> fileInputPath = new("File", "Input file to add the chunk to", new []{"-f", "--file"}, args, true);
+        Parameter<string> chunkInputPath = new("Input", "Input file with chunk", new []{"-c", "--chunk"}, args, true);
+        Parameter<string> fileInputPath = new("File", "Input file to add the chunk to", new []{"-i", "--input"}, args, true);
         Parameter<string> outputPath = new("Output", "Output file to write", new []{"-o", "--output"}, args, true);
         Parameter<int> chunkPosition = new("Position", "Position of the chunk in the file", new []{"-p", "--position"}, args, false);
 
