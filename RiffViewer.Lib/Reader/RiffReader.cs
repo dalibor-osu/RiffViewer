@@ -15,7 +15,7 @@ public class RiffReader
 {
     private readonly string _filePath;
     private readonly bool _lazyLoading;
-
+    
     /// <summary>
     /// Initializes a new instance of the <see cref="RiffReader"/> class.
     /// </summary>
@@ -133,7 +133,13 @@ public class RiffReader
         long chunkEnd = offset + length + (length % 2 == 0 ? 0 : 1);
         while (reader.BaseStream.Position < chunkEnd)
         {
-            childChunks.Add(ReadChunk(reader));
+            var child = ReadChunk(reader);
+            if (child.Length % 2 != 0)
+            {
+                // Skip padding
+                reader.ReadByte();
+            }
+            childChunks.Add(child);
         }
 
         return new ListChunk(offset, length, type, childChunks);
@@ -160,9 +166,15 @@ public class RiffReader
         long chunkEnd = offset + length + (length % 2 == 0 ? 0 : 1);
         while (reader.BaseStream.Position < chunkEnd)
         {
-            childChunks.Add(ReadChunk(reader));
+            var child = ReadChunk(reader);
+            if (child.Length % 2 != 0)
+            {
+                // Skip padding
+                reader.ReadByte();
+            }
+            childChunks.Add(child);
         }
-
+        
         return new RiffChunk(offset, length, type, childChunks);
     }
 }

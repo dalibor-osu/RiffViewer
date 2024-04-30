@@ -19,11 +19,13 @@
     </Design.DataContext>
     
     <Grid Name="RootGrid" RowDefinitions="32, *">
+        
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="200"></ColumnDefinition>
             <ColumnDefinition Width="1"></ColumnDefinition>
             <ColumnDefinition Width="*" MinWidth="200"></ColumnDefinition>
         </Grid.ColumnDefinitions>
+        
         <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
             <Menu>
                 <MenuItem Header="_File">
@@ -31,19 +33,28 @@
                 </MenuItem>
             </Menu>
         </StackPanel>
+        
+        <Line Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" StartPoint="0, 32" EndPoint="3000, 32" Stroke="Black" StrokeThickness="1"></Line>
+        
         <ScrollViewer Grid.Row="1" Grid.Column="0" MinWidth="100">
-            <Expander Name="Root" IsVisible="True" HorizontalAlignment="Stretch"
-                      VerticalAlignment="Top"
-                      Margin="10, 10, 5, 10" >
-            </Expander>
+            <Grid>
+                <Expander Name="Root" IsVisible="False" HorizontalAlignment="Stretch"
+                          VerticalAlignment="Top"
+                          Margin="10, 10, 5, 10" >
+                </Expander>
+                <Button Name="OpenFileButton" IsVisible="True" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Click here to load file" Click="OpenFile_OnClick" />
+            </Grid>
         </ScrollViewer>
+        
         <GridSplitter Grid.Row="1" Grid.Column="1" ResizeDirection="Columns" Margin="0, 10, 0, 10" />
+        
         <Border Grid.Row="1" Grid.Column="2" BorderBrush="LightGray" BorderThickness="1" CornerRadius="5"
                 Margin="5, 10, 10, 10">
             <ScrollViewer>
                 <TextBlock Name="Detail" Padding="10" Margin="10"></TextBlock>
             </ScrollViewer>
         </Border>
-    </Grid>
 
+    </Grid>
+    
 </Window>

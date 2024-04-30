@@ -1,6 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -12,9 +11,9 @@ using RiffViewer.Lib.Reader;
 using RiffViewer.Lib.Riff;
 using RiffViewer.Lib.Riff.Chunk;
 using RiffViewer.Lib.Riff.Chunk.Interfaces;
-using RiffViewer.UI.CustomControl;
 using RiffViewer.UI.ViewModels;
 using static PrettyLogSharp.PrettyLogger;
+using Path = System.IO.Path;
 
 namespace RiffViewer.UI.Views;
 
@@ -22,7 +21,32 @@ public partial class MainWindow : Window
 {
     public MainWindow()
     {
+        Settings.TryLoad();
         InitializeComponent();
+    }
+    
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        
+        if (Settings.Instance.LastOpenedFilePath == string.Empty)
+        {
+            return;
+        }
+        
+        IRiffFile parsedFile;
+        try
+        {
+            parsedFile = new RiffReader(Settings.Instance.LastOpenedFilePath).ReadFile();
+        }
+        catch (Exception exception)
+        {
+            Settings.Instance.LastOpenedFilePath = string.Empty;
+            Log(exception);
+            return;
+        }
+        
+        SetContextFile(parsedFile);
     }
 
     protected override void OnDataContextChanged(EventArgs e)
@@ -34,7 +58,7 @@ public partial class MainWindow : Window
         }
 
         UpdateRiffFileTree(context);
-        
+
         base.OnDataContextChanged(e);
     }
 
@@ -50,28 +74,31 @@ public partial class MainWindow : Window
 
         CreateTree(Root, context.RiffFile);
     }
-    
+
     private void CreateTree(Expander expander, IRiffFile file)
     {
-        expander.Header = CreateRiffChunkButton(file.MainChunk);
+        OpenFileButton.IsVisible = false;
+        
+        expander.Header = CreateRiffChunkHeader(file.MainChunk);
         expander.Padding = new Thickness(10);
         expander.IsVisible = true;
+        expander.IsExpanded = true;
         
         var stackPanel = new StackPanel
         {
-            Spacing = 10
+            Spacing = 10,
         };
-    
+
         foreach (var child in file.MainChunk.ChildChunks)
         {
             stackPanel.Children.Add(CreateNode(child));
         }
-    
+
         expander.Content = stackPanel;
         UpdateDetail(@$"
         Current file: {Path.GetFileName(file.Path)}
         Format: {file.Format}
-        Total Size: {file.MainChunk.Length}
+        Total Size: {file.MainChunk.Length.ToString("N0", new CultureInfo("cs-CZ"))}
         ");
     }
 
@@ -84,19 +111,23 @@ public partial class MainWindow : Window
             var expander = new Expander
             {
                 Padding = new Thickness(10),
-                Header = CreateRiffChunkButton(chunk),
+                Header = CreateRiffChunkHeader(chunk),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
-                IsEnabled = true
+                IsEnabled = true,
+                Margin = new Thickness(50, 0, 0, 0)
             };
-            
-            var stackPanel = new StackPanel();
-            stackPanel.Spacing = 10;
+
+            var rootStackPanel = new StackPanel
+            {
+                Spacing = 10,
+            };
+
             foreach (var child in listChunk.ChildChunks)
             {
-                stackPanel.Children.Add(CreateNode(child));
+                rootStackPanel.Children.Add(CreateNode(child));
             }
-    
-            expander.Content = stackPanel;
+
+            expander.Content = rootStackPanel;
             control = expander;
         }
         else
@@ -109,12 +140,13 @@ public partial class MainWindow : Window
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 Background = Brushes.White,
                 CornerRadius = new CornerRadius(5),
-                Child = CreateRiffChunkButton(chunk)
+                Child = CreateRiffChunkHeader(chunk),
+                Margin = new Thickness(50, 0, 0, 0)
             };
-            
+
             control = border;
         }
-    
+
         return control;
     }
 
@@ -127,7 +159,7 @@ public partial class MainWindow : Window
         {
             return;
         }
-        
+
         // Start async operation to open the dialog.
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
@@ -142,7 +174,7 @@ public partial class MainWindow : Window
         }
 
         var file = files[0];
-        
+
         IRiffFile parsedFile;
         try
         {
@@ -153,13 +185,16 @@ public partial class MainWindow : Window
             Log(exception);
             return;
         }
+
+        Settings.Instance.LastOpenedFilePath = file.Path.AbsolutePath;
+        Settings.Save();
         
         SetContextFile(parsedFile);
     }
 
     private void SetContextFile(IRiffFile? riffFile)
     {
-        Log($"Setting file to context: {riffFile?.Path ?? "null"}");
+        Log($"Setting file to context: { riffFile?.Path ?? "null" }");
         if (DataContext is not MainViewModel context)
         {
             Log($"context was null", LogType.Warning);
@@ -168,6 +203,33 @@ public partial class MainWindow : Window
 
         context.RiffFile = riffFile;
         UpdateRiffFileTree(context);
+    }
+
+    private StackPanel CreateRiffChunkHeader(IChunk chunk)
+    {
+        var stackPanel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 10
+        };
+
+        stackPanel.Children.Add(CreateRiffChunkButton(chunk));
+        stackPanel.Children.Add(
+            new TextBlock
+            {
+                Text = GetRiffChunkExpanderHeaderAdditionalInfo(chunk),
+                TextAlignment = TextAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis
+            }
+        );
+
+        return stackPanel;
+    }
+
+    private string GetRiffChunkExpanderHeaderAdditionalInfo(IChunk chunk)
+    {
+        return $"Offset: { chunk.Offset.ToString("N0", new CultureInfo("cs-CZ")) }, Length { chunk.Length.ToString("N0", new CultureInfo("cs-CZ")) } bytes";
     }
 
     private Button CreateRiffChunkButton(IChunk chunk)
@@ -183,10 +245,7 @@ public partial class MainWindow : Window
             IsEnabled = true
         };
 
-        headerButton.Click += (_, _) =>
-        {
-            UpdateDetail(chunk.ToString() ?? "null");
-        };
+        headerButton.Click += (_, _) => { UpdateDetail(chunk.ToString() ?? "null"); };
 
         return headerButton;
     }

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using RiffViewer.Lib.Riff.Chunk.Interfaces;
 using static RiffViewer.Lib.Riff.Constants;
 
@@ -43,8 +44,8 @@ public abstract class Chunk : IChunk
         StringBuilder builder = new();
 
         builder.AppendLine($"\nIdentifier: {Identifier}");
-        builder.AppendLine($"Length: {Length} bytes");
-        builder.AppendLine($"Offset: {Offset} bytes");
+        builder.AppendLine($"Length: {Length.ToString("N0", new CultureInfo("cs-CZ"))} bytes");
+        builder.AppendLine($"Offset: {Offset.ToString("N0", new CultureInfo("cs-CZ"))} bytes");
 
         return builder.ToString();
     }
