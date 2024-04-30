@@ -21,10 +21,11 @@ public class DataChunk : Chunk, IDataChunk
     /// <param name="identifier">Identifier of the chunk... e.g. data (for WAVE file)</param>
     /// <param name="offset">Offset from the start of the file in bytes</param>
     /// <param name="length">Length of the chunk in bytes</param>
+    /// <param name="parentChunk">Parent chunk of this chunk</param>
     /// <param name="data">Data store in this chunk as byte array</param>
     /// <param name="loaded">Indicates if data is loaded</param>
-    public DataChunk(string identifier, long offset, int length, byte[] data, bool loaded = true)
-        : base(identifier, offset, length)
+    public DataChunk(string identifier, long offset, int length, IChunk parentChunk, byte[] data, bool loaded = true)
+        : base(identifier, offset, length, parentChunk)
     {
         Loaded = loaded;
         Data = data;
@@ -37,8 +38,9 @@ public class DataChunk : Chunk, IDataChunk
     /// <param name="identifier">Identifier of the chunk... e.g. data (for WAVE file)</param>
     /// <param name="offset">Offset from the start of the file in bytes</param>
     /// <param name="length">Length of the chunk in bytes</param>
-    public DataChunk(string identifier, long offset, int length)
-        : this(identifier, offset, length, Array.Empty<byte>(), false)
+    /// <param name="parentChunk">Parent chunk of this chunk</param>
+    public DataChunk(string identifier, long offset, int length, IChunk parentChunk)
+        : this(identifier, offset, length, parentChunk, Array.Empty<byte>(), false)
     {
     }
 

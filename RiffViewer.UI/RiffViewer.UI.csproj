@@ -24,4 +24,39 @@
     <ItemGroup>
       <ProjectReference Include="..\RiffViewer.Lib\RiffViewer.Lib.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMono-Bold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMono-BoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMono-ExtraBold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMono-ExtraBoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMono-ExtraLight.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMono-ExtraLightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMono-Italic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMono-Light.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMono-LightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMono-Medium.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMono-MediumItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMono-Regular.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMono-SemiBold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMono-SemiBoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMono-Thin.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMono-ThinItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMonoNL-Bold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMonoNL-BoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMonoNL-ExtraBold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMonoNL-ExtraBoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMonoNL-ExtraLight.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMonoNL-ExtraLightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMonoNL-Italic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMonoNL-Light.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMonoNL-LightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMonoNL-Medium.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMonoNL-MediumItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMonoNL-Regular.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMonoNL-SemiBold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMonoNL-SemiBoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMonoNL-Thin.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\JetBrainsMonoNL-ThinItalic.ttf" />
+    </ItemGroup>
 </Project>

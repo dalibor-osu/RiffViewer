@@ -65,23 +65,56 @@ public class RiffReader
         using var fileStream = File.OpenRead(_filePath);
         using var reader = new BinaryReader(fileStream);
 
-        return ReadChunk(reader);
+        return ReadChunkFromFile(reader);
+    }
+    
+    /// <summary>
+    /// Reads the content of a chunk.
+    /// </summary>
+    /// <param name="reader">Instance of <see cref="BinaryReader"/> used for reading bytes in the current file</param>
+    /// <returns>Content of a chunk as <see cref="Chunk"/></returns>
+    private IChunk ReadChunkFromFile(BinaryReader reader)
+    {
+        string chunkIdentifier = reader.Read4ByteString();
+
+        if (chunkIdentifier == RIFF_CHUNK_IDENTIFIER)
+        {
+            return ReadRiffChunk(reader);
+        }
+        
+        return chunkIdentifier switch
+        {
+            RIFF_CHUNK_IDENTIFIER => ReadRiffChunk(reader),
+            LIST_CHUNK_IDENTIFIER => ReadListChunk(reader, null!),
+            _ => ReadDataChunk(reader, chunkIdentifier, null!)
+        };
     }
 
     /// <summary>
     /// Reads the content of a chunk.
     /// </summary>
     /// <param name="reader">Instance of <see cref="BinaryReader"/> used for reading bytes in the current file</param>
+    /// <param name="parentChunk">Parent chunk of the chunk to be read</param>
     /// <returns>Content of a chunk as <see cref="Chunk"/></returns>
-    private IChunk ReadChunk(BinaryReader reader)
+    private IChunk ReadChunk(BinaryReader reader, IChunk? parentChunk)
     {
         string chunkIdentifier = reader.Read4ByteString();
 
+        if (chunkIdentifier == RIFF_CHUNK_IDENTIFIER)
+        {
+            return ReadRiffChunk(reader);
+        }
+
+        if (parentChunk == null)
+        {
+            throw new RiffFileException("Non RIFF chunk must have a non null parent");
+        }
+        
         return chunkIdentifier switch
         {
             RIFF_CHUNK_IDENTIFIER => ReadRiffChunk(reader),
-            LIST_CHUNK_IDENTIFIER => ReadListChunk(reader),
-            _ => ReadDataChunk(reader, chunkIdentifier)
+            LIST_CHUNK_IDENTIFIER => ReadListChunk(reader, parentChunk),
+            _ => ReadDataChunk(reader, chunkIdentifier, parentChunk)
         };
     }
 
@@ -90,9 +123,10 @@ public class RiffReader
     /// </summary>
     /// <param name="reader">Instance of <see cref="BinaryReader"/> used for reading bytes in the current file</param>
     /// <param name="chunkIdentifier">Identifier of the chunk... e.g. RIFF, LIST, ...</param>
+    /// <param name="parentChunk">Parent chunk of the chunk to be read</param>
     /// <param name="position">If set, reader will start reading the content of the chunk from this position in the file</param>
     /// <returns>Content of a data chunk as <see cref="DataChunk"/></returns>
-    private IDataChunk ReadDataChunk(BinaryReader reader, string chunkIdentifier, long position = -1)
+    private IDataChunk ReadDataChunk(BinaryReader reader, string chunkIdentifier, IChunk parentChunk, long position = -1)
     {
         if (position > -1)
         {
@@ -105,20 +139,21 @@ public class RiffReader
         if (_lazyLoading)
         {
             reader.Skip(length);
-            return new DataChunk(chunkIdentifier, offset, length);
+            return new DataChunk(chunkIdentifier, offset, length, parentChunk);
         }
 
         byte[] data = reader.ReadBytes(length);
-        return new DataChunk(chunkIdentifier, offset, length, data);
+        return new DataChunk(chunkIdentifier, offset, length, parentChunk, data);
     }
 
     /// <summary>
     /// Reads the content of a list chunk.
     /// </summary>
     /// <param name="reader">Instance of <see cref="BinaryReader"/> used for reading bytes in the current file</param>
+    /// <param name="parentChunk">Parent chunk of the chunk to be read</param>
     /// <param name="position">If set, reader will start reading the content of the chunk from this position in the file</param>
     /// <returns>Content of a list chunk as <see cref="ListChunk"/></returns>
-    private ListChunk ReadListChunk(BinaryReader reader, long position = -1)
+    private ListChunk ReadListChunk(BinaryReader reader, IChunk parentChunk, long position = -1)
     {
         if (position > -1)
         {
@@ -128,12 +163,14 @@ public class RiffReader
         long offset = reader.BaseStream.Position - CHUNK_IDENTIFIER_LENGTH_BYTES;
         int length = reader.ReadInt32();
         string type = reader.Read4ByteString();
+        
+        var currentChunk = new ListChunk(offset, length, type, parentChunk);
         var childChunks = new List<IChunk>();
-
+        
         long chunkEnd = offset + length + (length % 2 == 0 ? 0 : 1);
         while (reader.BaseStream.Position < chunkEnd)
         {
-            var child = ReadChunk(reader);
+            var child = ReadChunk(reader, currentChunk);
             if (child.Length % 2 != 0)
             {
                 // Skip padding
@@ -142,7 +179,9 @@ public class RiffReader
             childChunks.Add(child);
         }
 
-        return new ListChunk(offset, length, type, childChunks);
+        currentChunk.SetChildChunks(childChunks);
+        
+        return currentChunk;
     }
 
     /// <summary>
@@ -161,12 +200,14 @@ public class RiffReader
         long offset = reader.BaseStream.Position - CHUNK_IDENTIFIER_LENGTH_BYTES;
         int length = reader.ReadInt32();
         string type = reader.Read4ByteString();
+
+        var currentChunk = new RiffChunk(offset, length, type);
         var childChunks = new List<IChunk>();
 
         long chunkEnd = offset + length + (length % 2 == 0 ? 0 : 1);
         while (reader.BaseStream.Position < chunkEnd)
         {
-            var child = ReadChunk(reader);
+            var child = ReadChunk(reader, currentChunk);
             if (child.Length % 2 != 0)
             {
                 // Skip padding
@@ -175,6 +216,8 @@ public class RiffReader
             childChunks.Add(child);
         }
         
-        return new RiffChunk(offset, length, type, childChunks);
+        currentChunk.SetChildChunks(childChunks);
+        
+        return currentChunk;
     }
 }

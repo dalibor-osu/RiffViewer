@@ -1,4 +1,5 @@
-﻿using RiffViewer.Lib.Riff.Chunk;
+﻿using RiffViewer.Lib.Exceptions;
+using RiffViewer.Lib.Riff.Chunk;
 using RiffViewer.Lib.Riff.Chunk.Interfaces;
 using RiffViewer.Lib.Riff.Formats.Wav;
 
@@ -16,6 +17,11 @@ public static class DataChunkExtensions
     /// <returns>Chunk converted to <see cref="FmtChunk"/></returns>
     public static FmtChunk ToFmtChunk(this IDataChunk dataChunk)
     {
-        return new FmtChunk(dataChunk.Identifier, dataChunk.Offset, dataChunk.Length, dataChunk.Data, dataChunk.Loaded);
+        if (dataChunk.ParentChunk is not RiffChunk riffChunk)
+        {
+            throw new RiffFileException("Parent chunk of a fmt chunk must be a RIFF chunk");
+        }
+        
+        return new FmtChunk(dataChunk.Identifier, dataChunk.Offset, dataChunk.Length, riffChunk, dataChunk.Data, dataChunk.Loaded);
     }
 }

@@ -25,4 +25,20 @@ public interface IChunk
     /// </summary>
     /// <returns></returns>
     public byte[] GetBytes();
+    
+    /// <summary>
+    /// Instance of a parent chunk or null
+    /// </summary>
+    public IChunk? ParentChunk { get; }
+
+    /// <summary>
+    /// Information that says if current chunk has a parent or not
+    /// </summary>
+    public bool HasParent { get; }
+
+    /// <summary>
+    /// Returns path to this chunk
+    /// </summary>
+    /// <returns></returns>
+    public string GetChunkPath();
 }

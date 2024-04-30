@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using RiffViewer.Lib.Exceptions;
+using RiffViewer.Lib.Riff.Chunk;
 using RiffViewer.Lib.Riff.Chunk.Interfaces;
 using static RiffViewer.Lib.Riff.Constants;
 
@@ -49,11 +50,12 @@ public class FmtChunk : Chunk.Chunk, IDataChunk
     /// <param name="identifier">Identifier of the chunk... e.g. RIFF, LIST, ...</param>
     /// <param name="offset">Offset from the start of the file in bytes</param>
     /// <param name="length">Length of the chunk in bytes</param>
+    /// <param name="parentChunk">Parent chunk of this chunk. It has to be a RIFF chunk.</param>
     /// <param name="data">Data of the chunk in bytes</param>
     /// <param name="loaded">Whether the data are loaded or not</param>
     /// <exception cref="RiffFileException">Thrown if the length of a FMT chunk is not 16 bytes</exception>
-    public FmtChunk(string identifier, long offset, int length, byte[] data, bool loaded = true) : base(identifier,
-        offset, length)
+    public FmtChunk(string identifier, long offset, int length, RiffChunk parentChunk, byte[] data, bool loaded = true) : base(identifier,
+        offset, length, parentChunk)
     {
         //TODO: FMT chunk length can be different. see https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
         if (length != FMT_CHUNK_LENGTH_BYTES)

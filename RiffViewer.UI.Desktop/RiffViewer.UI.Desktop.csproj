@@ -21,4 +21,25 @@
     <ItemGroup>
         <ProjectReference Include="..\RiffViewer.UI\RiffViewer.UI.csproj"/>
     </ItemGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-Bold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-BoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-ExtraLight.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-ExtraLightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-Italic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-Light.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-LightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-Medium.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-MediumItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-Regular.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-SemiBold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-SemiBoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-Thin.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-ThinItalic.ttf" />
+    </ItemGroup>
 </Project>

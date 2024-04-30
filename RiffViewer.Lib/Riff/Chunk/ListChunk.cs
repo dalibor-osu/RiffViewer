@@ -12,7 +12,7 @@ public class ListChunk : Chunk
     /// <summary>
     /// Gets the child chunks of this chunk.
     /// </summary>
-    public List<IChunk> ChildChunks { get; }
+    public List<IChunk> ChildChunks { get; private set; }
 
     /// <summary>
     /// Gets the type of this chunk.
@@ -25,23 +25,30 @@ public class ListChunk : Chunk
     /// <param name="offset">Offset from the start of the file in bytes</param>
     /// <param name="length">Length of the chunk in bytes</param>
     /// <param name="type">Type of the RIFF chunk... e.g. INFO</param>
+    /// <param name="parentChunk">Parent chunk of this chunk</param>
     /// <param name="childChunks">Child chunks of this chunks</param>
-    public ListChunk(long offset, int length, string type, List<IChunk> childChunks)
-        : base(LIST_CHUNK_IDENTIFIER, offset, length)
+    public ListChunk(long offset, int length, string type, IChunk parentChunk, List<IChunk> childChunks)
+        : base(LIST_CHUNK_IDENTIFIER, offset, length, parentChunk)
     {
         ChildChunks = childChunks;
         Type = type;
     }
-
+    
     /// <summary>
-    /// Initializes a new instance of the <see cref="ListChunk"/> class without child chunks.
+    /// Initializes a new instance of the <see cref="ListChunk"/> class with empty child chunks.
     /// </summary>
     /// <param name="offset">Offset from the start of the file in bytes</param>
     /// <param name="length">Length of the chunk in bytes</param>
     /// <param name="type">Type of the RIFF chunk... e.g. INFO</param>
-    public ListChunk(long offset, int length, string type)
-        : this(offset, length, type, new List<IChunk>())
+    /// <param name="parentChunk">Parent chunk of this chunk</param>
+    internal ListChunk(long offset, int length, string type, IChunk parentChunk)
+        : this(offset, length, type, parentChunk, new List<IChunk>())
     {
+    }
+
+    internal void SetChildChunks(List<IChunk> children)
+    {
+        ChildChunks = children;
     }
 
     public IChunk? FindSubChunk(string name)
@@ -121,5 +128,23 @@ public class ListChunk : Chunk
         }
 
         return bytes.ToArray();
+    }
+
+    /// <inheritdoc />
+    public override string GetChunkPath()
+    {
+        if (ParentChunk == null)
+        {
+            return string.Empty;
+        }
+
+        string parentPath = ParentChunk.GetChunkPath();
+        
+        if (parentPath == string.Empty)
+        {
+            return Type;
+        }
+        
+        return $"{parentPath}.{Type}";
     }
 }

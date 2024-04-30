@@ -1,5 +1,7 @@
 using System;
 using System.Globalization;
+using System.Linq;
+using System.Text;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -19,25 +21,28 @@ namespace RiffViewer.UI.Views;
 
 public partial class MainWindow : Window
 {
+    private IChunk? _currentDetailChunk = null;
+    private bool _binaryDetail = false;
+
     public MainWindow()
     {
         Settings.TryLoad();
         InitializeComponent();
     }
-    
+
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        
+
         if (Settings.Instance.LastOpenedFilePath == string.Empty)
         {
             return;
         }
-        
+
         IRiffFile parsedFile;
         try
         {
-            parsedFile = new RiffReader(Settings.Instance.LastOpenedFilePath).ReadFile();
+            parsedFile = new RiffReader(Settings.Instance.LastOpenedFilePath, false).ReadFile();
         }
         catch (Exception exception)
         {
@@ -45,7 +50,7 @@ public partial class MainWindow : Window
             Log(exception);
             return;
         }
-        
+
         SetContextFile(parsedFile);
     }
 
@@ -78,12 +83,12 @@ public partial class MainWindow : Window
     private void CreateTree(Expander expander, IRiffFile file)
     {
         OpenFileButton.IsVisible = false;
-        
+
         expander.Header = CreateRiffChunkHeader(file.MainChunk);
         expander.Padding = new Thickness(10);
         expander.IsVisible = true;
         expander.IsExpanded = true;
-        
+
         var stackPanel = new StackPanel
         {
             Spacing = 10,
@@ -116,7 +121,7 @@ public partial class MainWindow : Window
                 IsEnabled = true,
                 Margin = new Thickness(50, 0, 0, 0)
             };
-
+            
             var rootStackPanel = new StackPanel
             {
                 Spacing = 10,
@@ -147,6 +152,8 @@ public partial class MainWindow : Window
             control = border;
         }
 
+        control.PointerPressed += (sender, args) => { Log($"{chunk.GetChunkPath()}"); };
+        
         return control;
     }
 
@@ -178,7 +185,7 @@ public partial class MainWindow : Window
         IRiffFile parsedFile;
         try
         {
-            parsedFile = new RiffReader(file.Path.AbsolutePath).ReadFile();
+            parsedFile = new RiffReader(file.Path.AbsolutePath, false).ReadFile();
         }
         catch (Exception exception)
         {
@@ -188,13 +195,13 @@ public partial class MainWindow : Window
 
         Settings.Instance.LastOpenedFilePath = file.Path.AbsolutePath;
         Settings.Save();
-        
+
         SetContextFile(parsedFile);
     }
 
     private void SetContextFile(IRiffFile? riffFile)
     {
-        Log($"Setting file to context: { riffFile?.Path ?? "null" }");
+        Log($"Setting file to context: {riffFile?.Path ?? "null"}");
         if (DataContext is not MainViewModel context)
         {
             Log($"context was null", LogType.Warning);
@@ -220,7 +227,8 @@ public partial class MainWindow : Window
                 Text = GetRiffChunkExpanderHeaderAdditionalInfo(chunk),
                 TextAlignment = TextAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
-                TextTrimming = TextTrimming.CharacterEllipsis
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                HorizontalAlignment = HorizontalAlignment.Stretch
             }
         );
 
@@ -229,7 +237,8 @@ public partial class MainWindow : Window
 
     private string GetRiffChunkExpanderHeaderAdditionalInfo(IChunk chunk)
     {
-        return $"Offset: { chunk.Offset.ToString("N0", new CultureInfo("cs-CZ")) }, Length { chunk.Length.ToString("N0", new CultureInfo("cs-CZ")) } bytes";
+        return
+            $"Offset: {chunk.Offset.ToString("N0", new CultureInfo("cs-CZ"))}, Length {chunk.Length.ToString("N0", new CultureInfo("cs-CZ"))} bytes";
     }
 
     private Button CreateRiffChunkButton(IChunk chunk)
@@ -245,13 +254,70 @@ public partial class MainWindow : Window
             IsEnabled = true
         };
 
-        headerButton.Click += (_, _) => { UpdateDetail(chunk.ToString() ?? "null"); };
+        headerButton.Click += (_, _) =>
+        {
+            UpdateDetail(chunk);
+            _currentDetailChunk = chunk;
+        };
 
         return headerButton;
+    }
+
+    private void UpdateDetail(IChunk? chunk)
+    {
+        if (!_binaryDetail || chunk == null)
+        {
+            UpdateDetail(chunk?.ToString() ?? "null");
+            return;
+        }
+
+        const int bytesPerLine = 16;
+        const int byteLimit = 10000;
+
+        var builder = new StringBuilder();
+        byte[] chunkBytes = chunk.GetBytes();
+        byte[] bytesToConvert = chunkBytes.Length > byteLimit ? chunkBytes.Take(byteLimit).ToArray() : chunkBytes;
+        int bytesLeft = bytesToConvert.Length;
+
+        Span<byte> currentBytes = stackalloc byte[bytesPerLine];
+        Span<char> asciiConverted = stackalloc char[bytesPerLine];
+
+        for (int i = 0; i < bytesToConvert.Length; i += bytesPerLine)
+        {
+            for (int j = 0; j < bytesPerLine; j++)
+            {
+                if (j >= bytesLeft)
+                {
+                    currentBytes[j] = 0;
+                    asciiConverted[j] = '_';
+                    continue;
+                }
+
+                currentBytes[j] = bytesToConvert[i + j];
+                char currentChar = (char)currentBytes[j];
+                asciiConverted[j] = char.IsAsciiLetterOrDigit(currentChar) || currentChar == ' ' ? currentChar : '_';
+            }
+
+            builder.AppendLine($"{BitConverter.ToString(currentBytes.ToArray())}\t{new string(asciiConverted)}");
+            bytesLeft -= bytesPerLine;
+        }
+
+        if (bytesToConvert.Length == byteLimit)
+        {
+            builder.AppendLine($"...\nData longer than {byteLimit} bytes");
+        }
+
+        UpdateDetail(builder.ToString());
     }
 
     private void UpdateDetail(string text)
     {
         Detail.Text = text;
+    }
+
+    private void ChangeView_OnClick(object? sender, RoutedEventArgs e)
+    {
+        _binaryDetail = !_binaryDetail;
+        UpdateDetail(_currentDetailChunk);
     }
 }

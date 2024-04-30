@@ -8,8 +8,13 @@
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
-
+             
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>
+             
+     <Application.Resources>
+         <FontFamily x:Key="RedditMono">avares://RiffViewer.UI/Assets/Fonts#Reddit</FontFamily>
+     </Application.Resources>
+     
 </Application>

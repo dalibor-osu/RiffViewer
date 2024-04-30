@@ -12,13 +12,13 @@ public class RiffChunk : Chunk
     /// <summary>
     /// Gets the child chunks of this chunk.
     /// </summary>
-    public List<IChunk> ChildChunks { get; }
+    public List<IChunk> ChildChunks { get; private set; }
 
     /// <summary>
     /// Gets the format of this chunk.
     /// </summary>
     public string Format { get; }
-
+    
     /// <summary>
     /// Initializes a new instance of the <see cref="RiffChunk"/> class with child chunks.
     /// </summary>
@@ -27,7 +27,7 @@ public class RiffChunk : Chunk
     /// <param name="format">Format of the RIFF chunk... e.g. WAVE, AVI, WEBP, ...</param>
     /// <param name="childChunks">Child chunks of this chunks</param>
     public RiffChunk(long offset, int length, string format, List<IChunk> childChunks)
-        : base(RIFF_CHUNK_IDENTIFIER, offset, length)
+        : base(RIFF_CHUNK_IDENTIFIER, offset, length, null)
     {
         ChildChunks = childChunks;
         Format = format;
@@ -39,9 +39,14 @@ public class RiffChunk : Chunk
     /// <param name="offset">Offset from the start of the file in bytes</param>
     /// <param name="length">Length of the chunk in bytes</param>
     /// <param name="format">Format of the RIFF chunk... e.g. WAVE, AVI, WEBP, ...</param>
-    public RiffChunk(long offset, int length, string format)
+    internal RiffChunk(long offset, int length, string format)
         : this(offset, length, format, new List<IChunk>())
     {
+    }
+    
+    internal void SetChildChunks(List<IChunk> children)
+    {
+        ChildChunks = children;
     }
 
     public IChunk? FindSubChunk(string name)
@@ -150,5 +155,10 @@ public class RiffChunk : Chunk
         }
 
         return bytes.ToArray();
+    }
+
+    public override string GetChunkPath()
+    {
+        return string.Empty;
     }
 }

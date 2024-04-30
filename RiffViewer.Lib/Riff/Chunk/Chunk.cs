@@ -20,6 +20,12 @@ public abstract class Chunk : IChunk
     /// <inheritdoc />
     public long Offset { get; }
 
+    /// <inheritdoc />
+    public IChunk? ParentChunk { get; set; }
+
+    /// <inheritdoc />
+    public bool HasParent => ParentChunk != null;
+
     /// <summary>
     /// Gets the offset of the data of the chunk from the start of the file in bytes.
     /// </summary>
@@ -31,11 +37,13 @@ public abstract class Chunk : IChunk
     /// <param name="identifier">Identifier of the chunk... e.g. RIFF, LIST, ...</param>
     /// <param name="offset">Offset from the start of the file in bytes</param>
     /// <param name="length">Length of the chunk in bytes</param>
-    protected Chunk(string identifier, long offset, int length)
+    /// <param name="parentChunk">Parent chunk or null, if current chunk doesn't have a parent (RIFF chunk only)</param>
+    protected Chunk(string identifier, long offset, int length, IChunk? parentChunk)
     {
         Identifier = identifier;
         Offset = offset;
         Length = length;
+        ParentChunk = parentChunk;
     }
 
     /// <inheritdoc />
@@ -50,6 +58,7 @@ public abstract class Chunk : IChunk
         return builder.ToString();
     }
 
+    /// <inheritdoc />
     public virtual byte[] GetBytes()
     {
         List<byte> bytes = new();
@@ -57,5 +66,23 @@ public abstract class Chunk : IChunk
         bytes.AddRange(BitConverter.GetBytes(Length));
 
         return bytes.ToArray();
+    }
+
+    /// <inheritdoc />
+    public virtual string GetChunkPath()
+    {
+        if (ParentChunk == null)
+        {
+            return string.Empty;
+        }
+
+        string parentPath = ParentChunk.GetChunkPath();
+        
+        if (parentPath == string.Empty)
+        {
+            return Identifier;
+        }
+        
+        return $"{parentPath}.{Identifier}";
     }
 }
