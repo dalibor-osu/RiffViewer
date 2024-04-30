@@ -4,6 +4,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiffViewer", "RiffViewer\Ri
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiffViewer.Lib", "RiffViewer.Lib\RiffViewer.Lib.csproj", "{438CE8FC-724E-490D-8304-7B86BC0360F0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiffViewer.UI", "RiffViewer.UI\RiffViewer.UI.csproj", "{51F6433E-C0E4-482A-8762-4A0A5470BD0F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiffViewer.UI.Desktop", "RiffViewer.UI.Desktop\RiffViewer.UI.Desktop.csproj", "{15C7960A-CD81-4029-B3A4-2A02BF281185}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,13 @@ Global
 		{438CE8FC-724E-490D-8304-7B86BC0360F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{438CE8FC-724E-490D-8304-7B86BC0360F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{438CE8FC-724E-490D-8304-7B86BC0360F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51F6433E-C0E4-482A-8762-4A0A5470BD0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51F6433E-C0E4-482A-8762-4A0A5470BD0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51F6433E-C0E4-482A-8762-4A0A5470BD0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51F6433E-C0E4-482A-8762-4A0A5470BD0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15C7960A-CD81-4029-B3A4-2A02BF281185}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15C7960A-CD81-4029-B3A4-2A02BF281185}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15C7960A-CD81-4029-B3A4-2A02BF281185}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15C7960A-CD81-4029-B3A4-2A02BF281185}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

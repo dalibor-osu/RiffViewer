@@ -1,0 +1,49 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:RiffViewer.UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:customControl="clr-namespace:RiffViewer.UI.CustomControl"
+        xmlns:chunk="clr-namespace:RiffViewer.Lib.Riff.Chunk;assembly=RiffViewer.Lib"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="RiffViewer.UI.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="RiffViewer"
+        x:CompileBindings="True">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainViewModel />
+    </Design.DataContext>
+    
+    <Grid Name="RootGrid" RowDefinitions="32, *">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="200"></ColumnDefinition>
+            <ColumnDefinition Width="1"></ColumnDefinition>
+            <ColumnDefinition Width="*" MinWidth="200"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+            <Menu>
+                <MenuItem Header="_File">
+                    <MenuItem Name="OpenFile" Header="_Open" InputGesture="Ctrl+O" Click="OpenFile_OnClick" />
+                </MenuItem>
+            </Menu>
+        </StackPanel>
+        <ScrollViewer Grid.Row="1" Grid.Column="0" MinWidth="100">
+            <Expander Name="Root" IsVisible="True" HorizontalAlignment="Stretch"
+                      VerticalAlignment="Top"
+                      Margin="10, 10, 5, 10" >
+            </Expander>
+        </ScrollViewer>
+        <GridSplitter Grid.Row="1" Grid.Column="1" ResizeDirection="Columns" Margin="0, 10, 0, 10" />
+        <Border Grid.Row="1" Grid.Column="2" BorderBrush="LightGray" BorderThickness="1" CornerRadius="5"
+                Margin="5, 10, 10, 10">
+            <ScrollViewer>
+                <TextBlock Name="Detail" Padding="10" Margin="10"></TextBlock>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+
+</Window>
