@@ -17,32 +17,32 @@ public class FmtChunk : Chunk.Chunk, IDataChunk
     /// <summary>
     /// Format of the audio data
     /// </summary>
-    public int AudioFormat { get; }
+    public short AudioFormat { get; private set; }
 
     /// <summary>
     /// Number of channels
     /// </summary>
-    public int ChannelCount { get; }
+    public short ChannelCount { get; private set; }
 
     /// <summary>
     /// Sampling rate in Hz
     /// </summary>
-    public int SamplingRate { get; }
+    public int SamplingRate { get; private set; }
 
     /// <summary>
     /// Rate of the data in bytes per second
     /// </summary>
-    public int DataRate { get; }
+    public int DataRate { get; private set; }
 
     /// <summary>
     /// Size of a data block in bytes.
     /// </summary>
-    public int DataBlockSize { get; }
+    public short DataBlockSize { get; private set; }
 
     /// <summary>
     /// Number of bits per sample
     /// </summary>
-    public int BitsPerSample { get; }
+    public short BitsPerSample { get; private set; }
 
     /// <summary>
     /// Constructor for a FMT chunk.
@@ -76,6 +76,30 @@ public class FmtChunk : Chunk.Chunk, IDataChunk
     }
 
     /// <summary>
+    /// Creates a copy of a FMT Chunk class instance
+    /// </summary>
+    /// <param name="fmtChunk">Instance to clone</param>
+    /// <exception cref="RiffFileException">Thrown if the length of a FMT chunk is not 16 bytes</exception>
+    public FmtChunk(FmtChunk fmtChunk) : base(fmtChunk.Identifier, fmtChunk.Offset, fmtChunk.Length, fmtChunk.ParentChunk)
+    {
+        //TODO: FMT chunk length can be different. see https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
+        if (fmtChunk.Length != FMT_CHUNK_LENGTH_BYTES)
+        {
+            throw new RiffFileException("fmt chunk length is not 16 bytes.");
+        }
+
+        AudioFormat = fmtChunk.AudioFormat;
+        ChannelCount = fmtChunk.ChannelCount;
+        SamplingRate = fmtChunk.SamplingRate;
+        DataRate = fmtChunk.DataRate;
+        DataBlockSize = fmtChunk.DataBlockSize;
+        BitsPerSample = fmtChunk.BitsPerSample;
+
+        Loaded = fmtChunk.Loaded;
+        Data = fmtChunk.Data;
+    }
+
+    /// <summary>
     /// Sets the data of the chunk and marks it as loaded.
     /// </summary>
     /// <param name="data">Data to set</param>
@@ -83,6 +107,49 @@ public class FmtChunk : Chunk.Chunk, IDataChunk
     {
         Data = data;
         Loaded = true;
+    }
+
+    public void SetAudioFormat(short format)
+    {
+        UpdateDataArray(0, BitConverter.GetBytes(format));
+        AudioFormat = format;
+    }
+
+    public void SetChannelCount(short channelCount)
+    {
+        UpdateDataArray(2, BitConverter.GetBytes(channelCount));
+        ChannelCount = channelCount;
+        UpdateCalculatedValues();
+    }
+
+    public void SetSamplingRate(int samplingRate)
+    {
+        UpdateDataArray(4, BitConverter.GetBytes(samplingRate));
+        SamplingRate = samplingRate;
+        UpdateCalculatedValues();
+    }
+
+    public void SetBitsPerSample(short bitsPerSample)
+    {
+        UpdateDataArray(14, BitConverter.GetBytes(bitsPerSample));
+        BitsPerSample = bitsPerSample;
+        UpdateCalculatedValues();
+    }
+
+    private void UpdateDataArray(int index, byte[] bytes)
+    {
+        Array.Copy(bytes, 0, Data, index, bytes.Length);
+    }
+
+    private void UpdateCalculatedValues()
+    {
+        DataBlockSize = (short)(ChannelCount * (BitsPerSample / 8));
+        byte[] dataBlockSizeBytes = BitConverter.GetBytes(DataBlockSize);
+        UpdateDataArray(12, dataBlockSizeBytes);
+        
+        DataRate = SamplingRate * DataBlockSize;
+        byte[] dataRateBytes = BitConverter.GetBytes(DataRate);
+        UpdateDataArray(8, dataRateBytes);
     }
 
     /// <inheritdoc />

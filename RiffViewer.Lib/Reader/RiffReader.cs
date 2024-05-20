@@ -23,6 +23,11 @@ public class RiffReader
     /// <param name="lazyLoading">Whether the file should be read with or without data. Default is true (without data)</param>
     public RiffReader(string filePath, bool lazyLoading = true)
     {
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            throw new ArgumentException("filePath can't be null or empty", nameof(filePath));
+        }
+        
         _filePath = filePath;
         _lazyLoading = lazyLoading;
     }

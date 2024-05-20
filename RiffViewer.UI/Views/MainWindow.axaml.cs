@@ -1,21 +1,28 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using NAudio.Wave;
 using PrettyLogSharp;
 using RiffViewer.Lib.Reader;
 using RiffViewer.Lib.Riff;
 using RiffViewer.Lib.Riff.Chunk;
 using RiffViewer.Lib.Riff.Chunk.Interfaces;
+using RiffViewer.Lib.Riff.Formats.Wav;
+using RiffViewer.Lib.Writer;
 using RiffViewer.UI.ViewModels;
 using static PrettyLogSharp.PrettyLogger;
 using Path = System.IO.Path;
+using RiffChunk = RiffViewer.Lib.Riff.Chunk.RiffChunk;
 
 namespace RiffViewer.UI.Views;
 
@@ -23,7 +30,11 @@ public partial class MainWindow : Window
 {
     private IChunk? _currentDetailChunk = null;
     private bool _binaryDetail = false;
-
+    private WavePlot? plotWindow;
+    
+    private WaveOutEvent? outputDevice;
+    private AudioFileReader? audioFile;
+    
     public MainWindow()
     {
         Settings.TryLoad();
@@ -34,7 +45,12 @@ public partial class MainWindow : Window
     {
         base.OnLoaded(e);
 
-        if (Settings.Instance.LastOpenedFilePath == string.Empty)
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            Play.IsVisible = false;
+        }
+        
+        if (string.IsNullOrWhiteSpace(Settings.Instance.LastOpenedFilePath))
         {
             return;
         }
@@ -77,6 +93,10 @@ public partial class MainWindow : Window
             return;
         }
 
+        ShowWaveform.IsEnabled = context.RiffFile is WavFile;
+        
+        Title = $"Riff Viewer - {Path.GetFileName(context.RiffFile.Path)}";
+        
         CreateTree(Root, context.RiffFile);
     }
 
@@ -121,7 +141,7 @@ public partial class MainWindow : Window
                 IsEnabled = true,
                 Margin = new Thickness(50, 0, 0, 0)
             };
-            
+
             var rootStackPanel = new StackPanel
             {
                 Spacing = 10,
@@ -152,9 +172,56 @@ public partial class MainWindow : Window
             control = border;
         }
 
-        control.PointerPressed += (sender, args) => { Log($"{chunk.GetChunkPath()}"); };
-        
+        control.ContextMenu = CreateContextMenuForNode(chunk);
+
         return control;
+    }
+
+    private ContextMenu CreateContextMenuForNode(IChunk chunk)
+    {
+        var menu = new ContextMenu();
+        
+        var removeMenuItem = new MenuItem
+        {
+            Header = "Delete"
+        };
+        removeMenuItem.Click += (_, _) => RemoveChunk(chunk.GetChunkPath());
+        menu.Items.Add(removeMenuItem);
+
+        if (chunk is FmtChunk fmtChunk)
+        {
+            var editMenuItem = new MenuItem()
+            {
+                Header = "Edit"
+            };
+
+            if (GetDataContext()?.RiffFile is not WavFile wavFile)
+            {
+                throw new ArgumentException("RiffFile is not a valid WavFile");
+            }
+
+            editMenuItem.Click += (_, _) =>
+            {
+                var fmtChunkEditWindow = new FmtChunkEdit(fmtChunk, wavFile);
+                fmtChunkEditWindow.Closed += (_, _) => UpdateRiffFileTree(GetDataContext()!);
+                fmtChunkEditWindow.Show(this);
+            };
+            menu.Items.Add(editMenuItem);
+        }
+
+        return menu;
+    }
+
+    private void RemoveChunk(string chunkPath)
+    {
+        var context = GetDataContext();
+        if (context?.RiffFile == null)
+        {
+            return;
+        }
+
+        context.RiffFile.RemoveChunk(chunkPath);
+        UpdateRiffFileTree(context);
     }
 
     private async void OpenFile_OnClick(object? sender, RoutedEventArgs e)
@@ -185,7 +252,7 @@ public partial class MainWindow : Window
         IRiffFile parsedFile;
         try
         {
-            parsedFile = new RiffReader(file.Path.AbsolutePath, false).ReadFile();
+            parsedFile = new RiffReader(file.Path.LocalPath, false).ReadFile();
         }
         catch (Exception exception)
         {
@@ -195,6 +262,11 @@ public partial class MainWindow : Window
 
         Settings.Instance.LastOpenedFilePath = file.Path.AbsolutePath;
         Settings.Save();
+        
+        foreach (var ownedWindow in OwnedWindows)
+        {
+            ownedWindow.Close();
+        }
 
         SetContextFile(parsedFile);
     }
@@ -207,7 +279,7 @@ public partial class MainWindow : Window
             Log($"context was null", LogType.Warning);
             context = new MainViewModel();
         }
-
+        
         context.RiffFile = riffFile;
         UpdateRiffFileTree(context);
     }
@@ -317,7 +389,80 @@ public partial class MainWindow : Window
 
     private void ChangeView_OnClick(object? sender, RoutedEventArgs e)
     {
+        if (_currentDetailChunk == null)
+        {
+            return;
+        }
+
         _binaryDetail = !_binaryDetail;
         UpdateDetail(_currentDetailChunk);
+    }
+
+    private MainViewModel? GetDataContext()
+    {
+        return DataContext is not MainViewModel mainViewModel ? null : mainViewModel;
+    }
+
+    private async void SaveAs_OnClick(object? sender, RoutedEventArgs e)
+    {
+        // Get top level from the current control. Alternatively, you can use Window reference instead.
+        var topLevel = GetTopLevel(this);
+        var context = GetDataContext();
+        
+        if (topLevel == null || context?.RiffFile == null)
+        {
+            return;
+        }
+        
+        // Start async operation to open the dialog.
+        var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Save RIFF File"
+        });
+        
+        if (file == null)
+        {
+            Log("File was not not selected");
+            return;
+        }
+
+        var writer = new RiffWriter();
+        writer.Write(file.Path.AbsolutePath, context.RiffFile);
+        
+        Title = $"Riff Viewer - {Path.GetFileName(file.Path.AbsolutePath)}";
+    }
+
+    private void ShowWaveform_OnClick(object? sender, RoutedEventArgs e)
+    {
+        var context = GetDataContext();
+        if (context?.RiffFile is not WavFile wavFile)
+        {
+            return;
+        }
+
+        plotWindow?.Close();
+        plotWindow = new WavePlot(wavFile);
+        plotWindow.Show(this);
+    }
+
+    private void Play_OnClick(object? sender, RoutedEventArgs e)
+    {
+        var context = GetDataContext();
+        if (context?.RiffFile == null)
+        {
+            return;
+        }
+        
+        if (outputDevice == null)
+        {
+            outputDevice = new WaveOutEvent();
+            //outputDevice.PlaybackStopped += OnPlaybackStopped;
+        }
+        if (audioFile == null)
+        {
+            audioFile = new AudioFileReader(context.RiffFile.Path);
+            outputDevice.Init(audioFile);
+        }
+        outputDevice.Play();
     }
 }

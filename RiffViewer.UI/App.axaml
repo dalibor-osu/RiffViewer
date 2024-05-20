@@ -3,18 +3,18 @@
              xmlns:local="using:RiffViewer.UI"
              x:Class="RiffViewer.UI.App"
              RequestedThemeVariant="Light">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+    <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
     <Application.DataTemplates>
-        <local:ViewLocator/>
+        <local:ViewLocator />
     </Application.DataTemplates>
-             
+
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>
-             
-     <Application.Resources>
-         <FontFamily x:Key="RedditMono">avares://RiffViewer.UI/Assets/Fonts#Reddit</FontFamily>
-     </Application.Resources>
-     
+
+    <Application.Resources>
+        <FontFamily x:Key="RedditMono">avares://RiffViewer.UI/Assets/Fonts#Reddit</FontFamily>
+    </Application.Resources>
+
 </Application>

@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="300"
+        x:Class="RiffViewer.UI.Views.FmtChunkEdit"
+        Title="FmtChunkEdit">
+    
+    <StackPanel Margin="20">
+        <TextBlock Margin="0 5">Audio Format:</TextBlock>
+        <TextBox Name="AudioFormatBox" Margin="0, 0, 0,10" TextChanged="AudioFormatBox_OnTextChanged"/>
+
+        <TextBlock Margin="0 5">Channel Count:</TextBlock>
+        <TextBox Name="ChannelCount" Margin="0, 0, 0,10" TextChanged="ChannelCount_OnTextChanged"/>
+
+        <TextBlock Margin="0 5">Sampling Rate:</TextBlock>
+        <TextBox Name="SamplingRate" Margin="0, 0, 0,10" TextChanged="SamplingRate_OnTextChanged"/>
+
+        <TextBlock Margin="0 5">Data Rate:</TextBlock>
+        <TextBox Name="DataRate" IsReadOnly="True" IsEnabled="False" Margin="0, 0, 0,10" />
+
+        <TextBlock Margin="0 5">Data Block Size:</TextBlock>
+        <TextBox Name="DataBlockSize" IsReadOnly="True" IsEnabled="False" Margin="0, 0, 0,10" />
+
+        <TextBlock Margin="0 5">Bits per sample:</TextBlock>
+        <TextBox Name="BitsPerSample" Margin="0, 0, 0,10" TextChanged="BitsPerSample_OnTextChanged"/>
+        
+        <Button HorizontalAlignment="Center" Click="Button_OnClick">Save and Close</Button>
+    </StackPanel>
+</Window>

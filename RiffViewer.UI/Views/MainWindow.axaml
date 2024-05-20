@@ -30,9 +30,11 @@
             <Menu>
                 <MenuItem Header="_File">
                     <MenuItem Name="OpenFile" Header="_Open" InputGesture="Ctrl+O" Click="OpenFile_OnClick" />
+                    <MenuItem Name="SaveAs" Header="_Save As" InputGesture="Ctrl+S" Click="SaveAs_OnClick" />
                 </MenuItem>
                 <MenuItem Header="_View">
-                    <MenuItem Name="ChangeView" Header="_Change detail view" Click="ChangeView_OnClick" />
+                    <MenuItem Name="ShowWaveform" Header="_Show waveform" Click="ShowWaveform_OnClick" IsEnabled="False"/>
+                    <MenuItem Name="Play" Header="Play" Click="Play_OnClick"></MenuItem>
                 </MenuItem>
             </Menu>
         </StackPanel>
@@ -56,6 +58,11 @@
             <ScrollViewer>
                 <TextBlock Name="Detail" Padding="10" Margin="10" FontFamily="{StaticResource RedditMono}" FontStyle="Normal"></TextBlock>
             </ScrollViewer>
+            <Border.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Name="ChangeView" Header="Change detail view" Click="ChangeView_OnClick" />
+                </ContextMenu>
+            </Border.ContextMenu>
         </Border>
 
     </Grid>
