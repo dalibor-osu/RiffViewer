@@ -63,6 +63,10 @@ public partial class MainWindow : Window
             var dir = Directory.CreateDirectory(TempDir);
             dir.Attributes = FileAttributes.Directory | FileAttributes.Hidden; 
         }
+        else
+        {
+            RemoveTempFiles();
+        }
 
         IRiffFile parsedFile;
         try
@@ -462,7 +466,7 @@ public partial class MainWindow : Window
             return;
         }
         
-        if (_outputDevice?.PlaybackState == PlaybackState.Stopped)
+        if (!File.Exists(Path.Join(TempDir, "temp.wav")))
         {
             var writer = new RiffWriter();
             writer.Write(Path.Join(TempDir, "temp.wav"), context.RiffFile);
@@ -482,12 +486,9 @@ public partial class MainWindow : Window
 
         try
         {
-            if (_audioFile == null)
-            {
-                _audioFile = new AudioFileReader(Path.Join(TempDir, "temp.wav"));
-                _outputDevice.Init(_audioFile);
-            }
+            _audioFile ??= new AudioFileReader(Path.Join(TempDir, "temp.wav"));
             
+            _outputDevice.Init(_audioFile);
             _outputDevice.Play();
         }
         catch (Exception exception)
@@ -498,6 +499,9 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        _outputDevice?.Dispose();
+        _audioFile?.Dispose();
+        
         RemoveTempFiles();
         
         base.OnClosed(e);
@@ -526,5 +530,10 @@ public partial class MainWindow : Window
     private void Stop_OnClick(object? sender, RoutedEventArgs e)
     {
         _outputDevice?.Stop();
+        _outputDevice = null;
+        _audioFile?.Dispose();
+        _audioFile = null;
+        
+        File.Delete(Path.Join(TempDir, "temp.wav"));
     }
 }
