@@ -7,6 +7,6 @@
         x:Class="RiffViewer.UI.Views.WavePlot"
         Title="WavePlot">
         
-        <ScottPlot:AvaPlot Name="AvaPlot1"/>
+        <ScottPlot:AvaPlot Name="WaveformPlot" Margin="10"/>
         
 </Window>

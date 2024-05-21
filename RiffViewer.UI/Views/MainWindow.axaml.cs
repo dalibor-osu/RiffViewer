@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -30,10 +31,12 @@ public partial class MainWindow : Window
 {
     private IChunk? _currentDetailChunk = null;
     private bool _binaryDetail = false;
-    private WavePlot? plotWindow;
+    private WavePlot? _plotWindow;
     
-    private WaveOutEvent? outputDevice;
-    private AudioFileReader? audioFile;
+    private WaveOutEvent? _outputDevice;
+    private AudioFileReader? _audioFile;
+
+    private const string TempDir = "./temp_rv";
     
     public MainWindow()
     {
@@ -44,15 +47,21 @@ public partial class MainWindow : Window
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            Play.IsVisible = false;
-        }
         
         if (string.IsNullOrWhiteSpace(Settings.Instance.LastOpenedFilePath))
         {
             return;
+        }
+        
+        // if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        // {
+        //     Playback.IsVisible = false;
+        // }
+
+        if (!Directory.Exists(TempDir))
+        {
+            var dir = Directory.CreateDirectory(TempDir);
+            dir.Attributes = FileAttributes.Directory | FileAttributes.Hidden; 
         }
 
         IRiffFile parsedFile;
@@ -93,7 +102,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        ShowWaveform.IsEnabled = context.RiffFile is WavFile;
+        ShowWaveform.IsEnabled = Playback.IsEnabled = context.RiffFile is WavFile;
         
         Title = $"Riff Viewer - {Path.GetFileName(context.RiffFile.Path)}";
         
@@ -440,29 +449,82 @@ public partial class MainWindow : Window
             return;
         }
 
-        plotWindow?.Close();
-        plotWindow = new WavePlot(wavFile);
-        plotWindow.Show(this);
+        _plotWindow?.Close();
+        _plotWindow = new WavePlot(wavFile);
+        _plotWindow.Show(this);
     }
 
     private void Play_OnClick(object? sender, RoutedEventArgs e)
     {
         var context = GetDataContext();
-        if (context?.RiffFile == null)
+        if (context?.RiffFile == null || _outputDevice?.PlaybackState == PlaybackState.Playing)
         {
             return;
         }
         
-        if (outputDevice == null)
+        if (_outputDevice?.PlaybackState == PlaybackState.Stopped)
         {
-            outputDevice = new WaveOutEvent();
-            //outputDevice.PlaybackStopped += OnPlaybackStopped;
+            var writer = new RiffWriter();
+            writer.Write(Path.Join(TempDir, "temp.wav"), context.RiffFile);
         }
-        if (audioFile == null)
+
+        if (_outputDevice?.PlaybackState == PlaybackState.Paused)
         {
-            audioFile = new AudioFileReader(context.RiffFile.Path);
-            outputDevice.Init(audioFile);
+            _outputDevice.Play();
+            return;
         }
-        outputDevice.Play();
+        
+        if (_outputDevice == null)
+        {
+            _outputDevice = new WaveOutEvent();
+            _outputDevice.PlaybackStopped += (_, _) => Play.IsEnabled = true;
+        }
+
+        try
+        {
+            if (_audioFile == null)
+            {
+                _audioFile = new AudioFileReader(Path.Join(TempDir, "temp.wav"));
+                _outputDevice.Init(_audioFile);
+            }
+            
+            _outputDevice.Play();
+        }
+        catch (Exception exception)
+        {
+            Log(exception);
+        }
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        RemoveTempFiles();
+        
+        base.OnClosed(e);
+    }
+
+    private void RemoveTempFiles()
+    {
+        var di = new DirectoryInfo(TempDir);
+
+        foreach (var file in di.GetFiles())
+        {
+            file.Delete(); 
+        }
+        
+        foreach (var dir in di.GetDirectories())
+        {
+            dir.Delete(true); 
+        }
+    }
+
+    private void Pause_OnClick(object? sender, RoutedEventArgs e)
+    {
+        _outputDevice?.Pause();
+    }
+
+    private void Stop_OnClick(object? sender, RoutedEventArgs e)
+    {
+        _outputDevice?.Stop();
     }
 }

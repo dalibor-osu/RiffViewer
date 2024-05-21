@@ -34,13 +34,17 @@ public partial class WavePlot : Window
     {
         base.OnLoaded(e);
         
-        AvaPlot1.Plot.Add.Signal(new FastSignalSourceDouble(GetAmplitudeData(), 1.0 / _file.FmtChunk.SamplingRate));
-        AvaPlot1.Plot.Axes.Rules.Add(new LockedVertical(AvaPlot1.Plot.Axes.Left, -1.2, 1.2));
-        AvaPlot1.Plot.Axes.Rules.Add(new LockedCenterY(AvaPlot1.Plot.Axes.Left, 0));
-        AvaPlot1.Plot.Axes.Rules.Add(new MaximumBoundary(AvaPlot1.Plot.Axes.Bottom, AvaPlot1.Plot.Axes.Left,
+        var signal = WaveformPlot.Plot.Add.Signal(new FastSignalSourceDouble(GetAmplitudeData(), 1.0 / _file.FmtChunk.SamplingRate));
+        
+        WaveformPlot.Plot.Axes.Rules.Add(new LockedVertical(WaveformPlot.Plot.Axes.Left, -1.2, 1.2));
+        WaveformPlot.Plot.Axes.Rules.Add(new LockedCenterY(WaveformPlot.Plot.Axes.Left, 0));
+        WaveformPlot.Plot.Axes.Rules.Add(new MaximumBoundary(WaveformPlot.Plot.Axes.Bottom, WaveformPlot.Plot.Axes.Left,
             new AxisLimits(new CoordinateRange(0, _file.GetLengthInSeconds()), new CoordinateRange(-1.5, 1.5))));
 
-        AvaPlot1.Refresh();
+        WaveformPlot.Plot.Axes.Bottom.Label.Text = "Time [s]";
+        WaveformPlot.Plot.Axes.Left.Label.Text = "Amplitude";
+        
+        WaveformPlot.Refresh();
     }
 
     private double[] GetAmplitudeData()

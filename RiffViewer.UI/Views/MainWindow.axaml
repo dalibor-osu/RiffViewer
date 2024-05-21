@@ -26,15 +26,19 @@
             <ColumnDefinition Width="*" MinWidth="200"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         
-        <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+        <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" FlowDirection="LeftToRight">
             <Menu>
                 <MenuItem Header="_File">
                     <MenuItem Name="OpenFile" Header="_Open" InputGesture="Ctrl+O" Click="OpenFile_OnClick" />
                     <MenuItem Name="SaveAs" Header="_Save As" InputGesture="Ctrl+S" Click="SaveAs_OnClick" />
+                    <MenuItem Name="Playback" Header="Playback">
+                        <MenuItem Name="Play" Header="Play" Click="Play_OnClick" />
+                        <MenuItem Name="Pause" Header="Pause" Click="Pause_OnClick" />
+                        <MenuItem Name="Stop" Header="Stop" Click="Stop_OnClick" />
+                    </MenuItem>
                 </MenuItem>
                 <MenuItem Header="_View">
                     <MenuItem Name="ShowWaveform" Header="_Show waveform" Click="ShowWaveform_OnClick" IsEnabled="False"/>
-                    <MenuItem Name="Play" Header="Play" Click="Play_OnClick"></MenuItem>
                 </MenuItem>
             </Menu>
         </StackPanel>
