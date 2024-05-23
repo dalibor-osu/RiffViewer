@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiffViewer", "RiffViewer\RiffViewer.csproj", "{9EE84162-C0D5-4FCC-BAAD-87806F61E765}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiffViewer.Console", "RiffViewer.Console\RiffViewer.Console.csproj", "{9EE84162-C0D5-4FCC-BAAD-87806F61E765}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RiffViewer.Lib", "RiffViewer.Lib\RiffViewer.Lib.csproj", "{438CE8FC-724E-490D-8304-7B86BC0360F0}"
 EndProject
