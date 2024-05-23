@@ -20,6 +20,8 @@ public partial class FmtChunkEdit : Window
         _wavFile = wavFile;
         
         InitializeComponent();
+        
+        Title = "Edit FMT Chunk";
     }
 
     protected override void OnLoaded(RoutedEventArgs e)

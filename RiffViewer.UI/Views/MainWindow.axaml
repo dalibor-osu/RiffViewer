@@ -26,8 +26,8 @@
         <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" FlowDirection="LeftToRight">
             <Menu>
                 <MenuItem Header="_File">
-                    <MenuItem Name="OpenFile" Header="_Open" InputGesture="Ctrl+O" Click="OpenFile_OnClick" />
-                    <MenuItem Name="SaveAs" Header="_Save As" InputGesture="Ctrl+S" Click="SaveAs_OnClick" />
+                    <MenuItem Name="OpenFile" Header="_Open" Click="OpenFile_OnClick" />
+                    <MenuItem Name="SaveAs" Header="_Save As" Click="SaveAs_OnClick" />
                     <MenuItem Name="AddChunk" Header="_Add Chunk" Click="AddChunk_OnClick" />
                     <MenuItem Name="Playback" Header="Playback">
                         <MenuItem Name="Play" Header="Play" Click="Play_OnClick" />

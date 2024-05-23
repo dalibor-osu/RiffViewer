@@ -13,7 +13,7 @@
                 <Grid ColumnDefinitions="80,*" RowDefinitions="*">
                         <Button Grid.Column="0" Grid.Row="0" Click="SelectButton_OnClick" HorizontalAlignment="Left" VerticalAlignment="Center">Select</Button>
                         <StackPanel Grid.Column="1" Grid.Row="0">
-                                <TextBlock Margin="0 5">File name:</TextBlock>
+                                <TextBlock Margin="0 5">File path:</TextBlock>
                                 <TextBox Name="FileNameBlock" Margin="0, 0, 0,10" Watermark="(File was not selected)" TextChanged="FileNameBlock_OnTextChanged" />
                         </StackPanel>
                 </Grid>

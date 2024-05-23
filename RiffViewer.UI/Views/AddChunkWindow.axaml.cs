@@ -29,6 +29,8 @@ public partial class AddChunkWindow : Window
         Height = 250;
         
         InitializeComponent();
+        
+        Title = "Add Chunk";
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
