@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using NAudio.MediaFoundation;
 using ReactiveUI;
 using RiffViewer.Lib.Riff.Chunk.Interfaces;
 using RiffViewer.Lib.Riff.Formats.Wav;
@@ -33,8 +34,13 @@ public partial class WavePlot : Window
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
+
+        for (int i = 0; i < _file.FmtChunk.ChannelCount; i++)
+        {
+            var signal = WaveformPlot.Plot.Add.Signal(new FastSignalSourceDouble(GetAmplitudeData(i), 1.0 / _file.FmtChunk.SamplingRate));
+            signal.LegendText = $"Channel {i}";
+        }
         
-        var signal = WaveformPlot.Plot.Add.Signal(new FastSignalSourceDouble(GetAmplitudeData(), 1.0 / _file.FmtChunk.SamplingRate));
         
         WaveformPlot.Plot.Axes.Rules.Add(new LockedVertical(WaveformPlot.Plot.Axes.Left, -1.2, 1.2));
         WaveformPlot.Plot.Axes.Rules.Add(new LockedCenterY(WaveformPlot.Plot.Axes.Left, 0));
@@ -43,11 +49,12 @@ public partial class WavePlot : Window
 
         WaveformPlot.Plot.Axes.Bottom.Label.Text = "Time [s]";
         WaveformPlot.Plot.Axes.Left.Label.Text = "Amplitude";
+        WaveformPlot.Plot.ShowLegend();
         
         WaveformPlot.Refresh();
     }
 
-    private double[] GetAmplitudeData()
+    private double[] GetAmplitudeData(int channel)
     {
         if (_file.MainChunk.FindSubChunk("data") is not IDataChunk dataChunk)
         {
@@ -60,12 +67,12 @@ public partial class WavePlot : Window
 
         byte[] currentBytes = new byte[bytesPerSample];
         double[] samples = new double[samplesCount];
-
-        for (int i = 0; i < samplesCount; i++)
+        
+        for (int i = (_file.FmtChunk.DataBlockSize / _file.FmtChunk.ChannelCount) * channel; i < dataChunk.Length; i += _file.FmtChunk.DataBlockSize)
         {
-            Array.Copy(dataChunk.Data, i * _file.FmtChunk.DataBlockSize, currentBytes, 0, bytesPerSample);
+            Array.Copy(dataChunk.Data, i, currentBytes, 0, bytesPerSample);
             double value = BitConverter.ToInt16(currentBytes) / maxValue * 2;
-            samples[i] = value;
+            samples[i / _file.FmtChunk.DataBlockSize] = value;
         }
 
         return samples;

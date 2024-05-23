@@ -18,7 +18,7 @@ public interface IChunk
     /// <summary>
     /// Gets the offset of the chunk from the start of the file in bytes.
     /// </summary>
-    public long Offset { get; }
+    public long Offset { get; set; }
 
     /// <summary>
     /// Gets the data of the chunk in bytes.
@@ -29,7 +29,7 @@ public interface IChunk
     /// <summary>
     /// Instance of a parent chunk or null
     /// </summary>
-    public IChunk? ParentChunk { get; }
+    public IChunk? ParentChunk { get; set; }
 
     /// <summary>
     /// Information that says if current chunk has a parent or not

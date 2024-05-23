@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -53,10 +54,10 @@ public partial class MainWindow : Window
             return;
         }
         
-        // if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        // {
-        //     Playback.IsVisible = false;
-        // }
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            Playback.IsVisible = false;
+        }
 
         if (!Directory.Exists(TempDir))
         {
@@ -196,10 +197,17 @@ public partial class MainWindow : Window
         
         var removeMenuItem = new MenuItem
         {
-            Header = "Delete"
+            Header = "Remove"
         };
         removeMenuItem.Click += (_, _) => RemoveChunk(chunk.GetChunkPath());
         menu.Items.Add(removeMenuItem);
+        
+        var extractMenuItem = new MenuItem
+        {
+            Header = "Extract"
+        };
+        extractMenuItem.Click += async (_, _) => await ExtractChunk(chunk.GetChunkPath());
+        menu.Items.Add(extractMenuItem);
 
         if (chunk is FmtChunk fmtChunk)
         {
@@ -235,6 +243,46 @@ public partial class MainWindow : Window
 
         context.RiffFile.RemoveChunk(chunkPath);
         UpdateRiffFileTree(context);
+    }
+
+    private async Task ExtractChunk(string chunkPath)
+    {
+        var context = GetDataContext();
+        if (context?.RiffFile == null)
+        {
+            return;
+        }
+        
+        // Get top level from the current control. Alternatively, you can use Window reference instead.
+        var topLevel = GetTopLevel(this);
+
+        if (topLevel == null)
+        {
+            return;
+        }
+        
+        // Start async operation to open the dialog.
+        var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Export RIFF Chunk"
+        });
+        
+        if (file == null)
+        {
+            Log("File was not not selected");
+            return;
+        }
+        
+        var chunk = context.RiffFile.FindChunk(chunkPath);
+
+        if (chunk == null)
+        {
+            Log($"Chunk {chunkPath} not found in file.");
+            return;
+        }
+
+        var writer = new RiffWriter();
+        writer.WriteChunk(file.Path.LocalPath, chunk);
     }
 
     private async void OpenFile_OnClick(object? sender, RoutedEventArgs e)
@@ -535,5 +583,18 @@ public partial class MainWindow : Window
         _audioFile = null;
         
         File.Delete(Path.Join(TempDir, "temp.wav"));
+    }
+
+    private void AddChunk_OnClick(object? sender, RoutedEventArgs e)
+    {
+        var context = GetDataContext();
+        if (context?.RiffFile == null)
+        {
+            return;
+        }
+
+        var addChunkWindow = new AddChunkWindow(context.RiffFile);
+        addChunkWindow.Closed += (_, _) => UpdateRiffFileTree(GetDataContext()!);
+        addChunkWindow.Show(this);
     }
 }

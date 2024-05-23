@@ -18,7 +18,7 @@ public abstract class Chunk : IChunk
     public int Length { get; protected set; }
 
     /// <inheritdoc />
-    public long Offset { get; }
+    public long Offset { get; set; }
 
     /// <inheritdoc />
     public IChunk? ParentChunk { get; set; }

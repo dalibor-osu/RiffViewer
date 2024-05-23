@@ -72,13 +72,37 @@ public class RiffChunk : Chunk
 
     public void InsertChunk(IChunk chunk, int position)
     {
+        chunk.ParentChunk = this;
+        
         if (position < 0 || position > ChildChunks.Count)
         {
             Console.WriteLine("Invalid position for inserting chunk. It will be inserted at the end of the file.");
+            chunk.Offset = Length + CHUNK_HEADER_LENGTH_BYTES;
             ChildChunks.Add(chunk);
         }
         else
         {
+            long offset;
+            if (position == 0)
+            {
+                offset = 12;
+            }
+            else if (position >= ChildChunks.Count)
+            {
+                offset = ChildChunks[^1].Offset + ChildChunks[^1].Length + CHUNK_HEADER_LENGTH_BYTES;
+            }
+            else
+            {
+                offset = ChildChunks[position - 1].Offset + ChildChunks[position - 1].Length + CHUNK_HEADER_LENGTH_BYTES;
+            }
+
+
+            for (int i = position; i < ChildChunks.Count; i++)
+            {
+                ChildChunks[i].Offset += chunk.Length + CHUNK_HEADER_LENGTH_BYTES;
+            }
+
+            chunk.Offset = offset;
             ChildChunks.Insert(position, chunk);
         }
 

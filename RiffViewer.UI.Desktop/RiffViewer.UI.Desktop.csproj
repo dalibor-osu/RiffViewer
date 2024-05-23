@@ -41,5 +41,6 @@
       <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-SemiBoldItalic.ttf" />
       <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-Thin.ttf" />
       <UpToDateCheckInput Remove="Assets\Fonts\RobotoMono-ThinItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\avalonia-logo.ico" />
     </ItemGroup>
 </Project>
