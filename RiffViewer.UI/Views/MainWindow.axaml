@@ -3,8 +3,6 @@
         xmlns:vm="using:RiffViewer.UI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:customControl="clr-namespace:RiffViewer.UI.CustomControl"
-        xmlns:chunk="clr-namespace:RiffViewer.Lib.Riff.Chunk;assembly=RiffViewer.Lib"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="RiffViewer.UI.Views.MainWindow"
         x:DataType="vm:MainViewModel"
