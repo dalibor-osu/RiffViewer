@@ -321,7 +321,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        Settings.Instance.LastOpenedFilePath = file.Path.AbsolutePath;
+        Settings.Instance.LastOpenedFilePath = file.Path.LocalPath;
         Settings.Save();
         
         foreach (var ownedWindow in OwnedWindows)
@@ -516,6 +516,20 @@ public partial class MainWindow : Window
         
         if (!File.Exists(Path.Join(TempDir, "temp.wav")))
         {
+            if (!Directory.Exists(TempDir))
+            {
+                try
+                {
+                    Directory.CreateDirectory(TempDir);
+                }
+                catch (Exception exception)
+                {
+                    Log(exception);
+                    return;
+                }
+                
+            }
+            
             var writer = new RiffWriter();
             writer.Write(Path.Join(TempDir, "temp.wav"), context.RiffFile);
         }
